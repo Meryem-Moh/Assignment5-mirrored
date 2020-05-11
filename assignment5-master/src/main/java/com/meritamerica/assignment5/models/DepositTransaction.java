@@ -1,24 +1,13 @@
 package com.meritamerica.assignment5.models;
 
-
-
 public class DepositTransaction extends Transaction {
-	
-	private double amount = 0;
 
-	public DepositTransaction(BankAccount targetAccount, double amount) {
-		this.amount = amount;
+	DepositTransaction(BankAccount targetAccount, double amount) {
+		super(targetAccount , amount);
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	DepositTransaction(BankAccount targetAccount, double amount , java.util.Date dateToBeAdded) {
+		super(targetAccount , amount , dateToBeAdded);
+	}
 	
 }

@@ -1,147 +1,155 @@
 package com.meritamerica.assignment5.models;
 
-
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 
-import java.util.ArrayList;
 
-public abstract class  BankAccount {
+//import java.text.ParseException;
+//import java.text.SimpleDateFormat;
 
-	// Variables
+public abstract class BankAccount {
+	
+		
+	@Min(value = 1 , message = "balance size error too small")
+	@Max(value = 25000 , message = "balance size error too big")	
 	private double balance;
-	private double interestRate;
-	private java.util.Date accountOpenedOn; 
+	
+		
+	//private double futureBalance;
 	private long accountNumber;
+	private java.util.Date openedOn;
+	private List<Transaction> transactionList;
 	
-	List<Transaction> list = new ArrayList<Transaction>();
 	
-	//Constructors
-	public BankAccount(double balance, double interestRate) {
-		this.balance = balance;
-		this.interestRate = interestRate;
-		this.accountOpenedOn = new java.util.Date();
+	public BankAccount() {
+		this.accountNumber = MeritBank.getNextAccountNumber();		
+		this.openedOn = new java.util.Date();		
 	}
 	
-	public BankAccount(double balance, double interestRate
-			, java.util.Date accountOpenedOn) {
+	public BankAccount(double balance) {
+		
 		this.balance = balance;
-		this.interestRate = interestRate;
-		this.accountOpenedOn = accountOpenedOn;
+		this.accountNumber = MeritBank.getNextAccountNumber();
+		this.openedOn = new java.util.Date();
+		
+		
 	}
 	
-	public BankAccount(long accountNumber, double balance, double interestRate
-			, java.util.Date accountOpenedOn) {
+	public BankAccount(double balance, java.util.Date accountOpenedOn) {
+		
+		this.balance = balance;		
+		this.accountNumber = MeritBank.getNextAccountNumber();
+		this.openedOn = accountOpenedOn;
+		
+	}
+	
+	public BankAccount(long accountNumber, double balance, java.util.Date accountOpenedOn) {
+		
+		this.balance = balance;		
 		this.accountNumber = accountNumber;
-		this.balance = balance;
-		this.interestRate = interestRate;
-		this.accountOpenedOn = accountOpenedOn;
+		this.openedOn = accountOpenedOn;
+		
 	}
 	
-	// Getters and Setters
+	
+	
+	
+	
+
+  //setters and getters 
+	public java.util.Date getOpenedOn() {
+		return openedOn;
+	}
+	
+	public void setOpenedOn(java.util.Date date) {
+		this.openedOn = date;
+	}
+	
+	public void setAccountNumber(long theAccountNumber) {
+		this.accountNumber = theAccountNumber;
+	}	
+	
 	public long getAccountNumber() {
-		return this.accountNumber;
+		return accountNumber;		
 	}
 	
 	public double getBalance() {
-		return this.balance;
+		return balance;
 	}
-	
-	public double getInterestRate() {
-		return this.interestRate;
-	}
-	
-	public java.util.Date getOpenedOn(){
-		return this.accountOpenedOn;
-	}
-	
-	public void setAccountNumber(long accountNum) {
-		this.accountNumber = accountNum;
-	}
-	
-	//Methods
-	public boolean withdraw(double amount){
-        if (amount < 0){
-            System.out.println("Unable to withdraw a negative amount. Try again.");
-            return false;
-        } else {
-            if((this.getBalance() - amount) < 0){
-                System.out.println("Not enough funds in the account.");
-                return false;
-            } else {
-                double newB = this.getBalance() - amount;
-                this.balance = newB;
-                return true;
-            }
-        }
 
-    }
-	
-	public boolean deposit(double amount){
-        if(amount <= 0){
-            System.out.println("Unable to deposit negative funds. Try again.");
-            return false;
-        } else {
-            this.balance = this.getBalance() + amount;
-            return true;
-        }
-    }
-	
-	public double futureValue(int years){
-        double pv = this.getBalance();
-        double fv = pv * (Math.pow((1 + this.getInterestRate()), years));
-        return fv;
-    }
-	
 
-	public String toString(){
-        DecimalFormat format = new DecimalFormat("##.00");
-        return "\nChecking Account Balance: $" + format.format(this.getBalance()) + "\n"
-                + "Checking Account Interest Rate: " + this.getInterestRate() + "\n"
-                + "Checking Account Balance in 3 years: $" + format.format(this.futureValue(3));
-    }
+	public void setBalance(double balance) {
+		this.balance = balance;
+	}
 	
-	/*   Create readFromString for each classes.
-	static BankAccount readFromString(String accountData) {
-		SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-    	try {
-    	String array1[] = accountData.split(",");
-    	int fAccount = Integer.parseInt(array1[0]);
-    	double fBalance = Double.parseDouble(array1[1]);
-    	double fInterest = Double.parseDouble(array1[2]);
-    	Date fDate = dateFormatter.parse(array1[3]);
-    	
-    	BankAccount banks = new BankAccount(fAccount, fBalance
-    			, fInterest, fDate);
-    	return banks;
-    	} catch (ParseException e) {
-    		return null;
-    	}
-    }
-*/
+	
+	//methods
+	boolean withdraw(double amount) {
+		if (getBalance() >= amount) {
+			setBalance(getBalance()-amount);
+			return true;
+		}else{
+			return false;
+		}
+			
+	}
+	
+	boolean deposit(double amount) {
+		if(amount > 0){
+		setBalance(getBalance()+amount);
+		return true;
+		}
+		return false;
+		
+	}
+	
+	boolean transfer(BankAccount from , BankAccount to , double amount) {
+		
+		
+		
+		return false;
+	}
+	
+	public abstract double getInterestRate();
+		
+	public String toString() {
+		return ("");
+	}
+
+	public double futureValue(int years) {
+		return MeritBank.recursiveFutureValue(balance, years, getInterestRate());
+					
+	}
+	
 	public String writeToString() {
-		SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
-    	return this.accountNumber + "," + this.balance + "," + this.interestRate
-    			+ "," + dateFormatter.format(this.accountOpenedOn);
-    }
+		StringBuilder sb = new StringBuilder(accountNumber + "," + balance + "," + getInterestRate() + "," + openedOn + "/n");
+		
+		int numberOfTransactions = transactionList.size();
+		sb.append(numberOfTransactions + "/n");
+		while(!transactionList.isEmpty()){
+			sb.append(transactionList.dequeue() + "/n");
+		}
+		
+		String toBeReturned = sb.toString();
+		return toBeReturned;
+	}
 	
-	/*
-	 * Assignment 4
-	 */
-	
-
 	public void addTransaction(Transaction transaction) {
 		
-		list.add(transaction);
+		if(transactionList == null){
+			Node<Transaction> n = new Node<Transaction>(transaction);
+			transactionList = new List<Transaction>(n);
+			
+		}else {
+			transactionList.enqueue(transaction);
+		}
+				
 	}
 	
-	public List<Transaction> getTransaction(){
+	public List<Transaction> getTransactions() {
+		return transactionList;
 		
-		return this.list ;
 	}
 
 	
@@ -151,6 +159,27 @@ public abstract class  BankAccount {
 	
 	
 	
+	/*static BankAccount readFromString(String accountData) {
+		
+		BankAccount toBeAdded = null;
+		try{
+			SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+			String[] toBeParsed = accountData.split(",");
+			long accountNumberToAdd = Integer.parseInt(toBeParsed[0]);
+			double curentBalanceToBeAdded = Double.parseDouble(toBeParsed[1]);
+			double interestRateToBeAdded = Double.parseDouble(toBeParsed[2]);
+			java.util.Date dateToBeAdded = dateFormatter.parse(toBeParsed[3]);
+			
+			
+			toBeAdded = new BankAccount(accountNumberToAdd , curentBalanceToBeAdded , interestRateToBeAdded , dateToBeAdded);
+		
+		
+		}catch(ParseException | NumberFormatException exception) {
+						
+		}
+		
+		return toBeAdded;
+		
+	}*/
 	
 }
-

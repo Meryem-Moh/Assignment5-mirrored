@@ -2,64 +2,117 @@ package com.meritamerica.assignment5.models;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
+import org.hibernate.validator.constraints.NotEmpty;
 
 public class CDAccount extends BankAccount {
-	 public CDOffering offering = new CDOffering(1, 0.01);
-
-	    public CDAccount(CDOffering offering, double openingBalance){
-	        super(openingBalance, offering.getInterestRate());
-	        this.offering = offering;
-	    }
-	    
-	    public CDAccount(int accountNum, double balance, double interest
-	    		, java.util.Date accountOpenedOn, int term) {
-	    	super(accountNum, balance, interest, accountOpenedOn);
-	    	this.offering.setTerm(term);
-	    	this.offering.setInterestRate(interest);
-	    }
-
-	    public int getTerm(){
-	        return this.offering.getTerm();
-	    }
-	    
-	    static CDAccount readFromString(String accountData) {
-			SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
-	    	try {
-	    	String array1[] = accountData.split(",");
-	    	int fAccount = Integer.parseInt(array1[0]);
-	    	double fBalance = Double.parseDouble(array1[1]);
-	    	double fInterest = Double.parseDouble(array1[2]);
-	    	Date fDate = dateFormatter.parse(array1[3]);
-	    	int fTerm = Integer.parseInt(array1[4]);
-	    	
-	    	CDAccount cda = new CDAccount(fAccount, fBalance
-	    			, fInterest, fDate, fTerm);
-	    	return cda;
-	    	} catch (ParseException e) {
-	    		return null;
-	    	}
-	    }
-	    
-	    // override from BankAccount withdraw , deposit
-	    public boolean withdraw(double amount){
-	        return false;
-	    }
 		
-		public boolean deposit(double amount) {
-	        return false;
-	    }
+	@Min(value  = 1 , message = "term size error too small") 
+	private int term;
+	
+			
+	@DecimalMin(value = "0.0", inclusive = false , message = "interest rate size error too small")
+	@Max(value = (long) 0.9999999999 , message = "interest rate size error too big")
+	private double interestRate;
+	
+	
+	public CDAccount() {
+		super();		 
 		
-		public double futureValue() {
-			double pv = this.getBalance();
-	        double fv = pv * (Math.pow((1 + this.getInterestRate()), this.offering.getTerm()));
-	        return fv;
+	}
+	
+	
+	public CDAccount(CDOffering offering , double openingBalance) {
+		super(openingBalance);
+		this.interestRate = offering.getInterestRate();
+		this.term = offering.getTerm();
+	}
+	
+	public CDAccount(double startBalance , double interestRate , long accountNumber , java.util.Date startDate , int termToBeAdded) {
+		
+		super(accountNumber , startBalance , startDate);
+		this.interestRate = interestRate;
+		this.term = termToBeAdded;
+	}
+	
+	public int getTerm() {
+		return term;
+	}	
+	
+     public double getInterestRate() {
+		return interestRate;
+	}
+
+	public void setInterestRate(double interestRate) {
+		this.interestRate = interestRate;
+	}
+
+	public void setTerm(int term) {
+		this.term = term;
+	}
+
+	public double futureValue() {
+	    return super.futureValue(term);
+			
+     }
+     
+     boolean withdraw(double amount) {
+    	 return false;
+     }
+     
+     boolean deposit(double amount) {
+    	 return false;
+     }
+     
+     static CDAccount readFromString(String accountData) {
+ 		
+    	 CDAccount toBeAdded = null;
+ 		try{
+ 			SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+ 			String[] toBeParsed = accountData.split(",");
+ 			long accountNumberToAdd = Integer.parseInt(toBeParsed[0]);
+ 			double curentBalanceToBeAdded = Double.parseDouble(toBeParsed[1]);
+ 			double interestRateToBeAdded = Double.parseDouble(toBeParsed[2]);
+ 			java.util.Date dateToBeAdded = dateFormatter.parse(toBeParsed[3]);
+ 			int termToBeAdded = Integer.parseInt(toBeParsed[4]);
+ 			
+ 			toBeAdded = new CDAccount(curentBalanceToBeAdded , interestRateToBeAdded , accountNumberToAdd , dateToBeAdded , termToBeAdded);
+ 		
+ 		
+ 		}catch(NumberFormatException exception) {
+			throw exception;
+			
+		}catch(ParseException exception) { 
+			
 		}
-		@Override
-		public String writeToString() {
-			SimpleDateFormat dateFormatter = new SimpleDateFormat("MM/dd/yyyy");
-	    	return this.getAccountNumber() + "," + this.getBalance() + "," + this.getInterestRate()
-	    			+ "," + dateFormatter.format(this.getOpenedOn()) + "," + this.getTerm();
-	    }
+ 		
+ 		return toBeAdded;
+ 		
+ 	} 
+    	 //throws ParseException
+    	 //Should throw a java.lang.NumberFormatException if String cannot be correctly parsed
+
+     
+     
+     @Override 
+     public String writeToString() {
+ 		StringBuilder sb = new StringBuilder(getAccountNumber() + "," + getBalance() + "," + term + "," + getInterestRate() + "," + getOpenedOn());
+ 		
+ 		int numberOfTransactions = super.getTransactions().size();
+		sb.append(numberOfTransactions + "/n");
+		while(!getTransactions().isEmpty()){
+			sb.append(getTransactions().dequeue() + "/n");
+		}
+ 		
+ 		String toBeReturned = sb.toString();
+ 		return toBeReturned;
+ 	}
+     
 }
+
+
+

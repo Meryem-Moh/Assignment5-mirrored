@@ -1,76 +1,114 @@
 package com.meritamerica.assignment5.models;
 
-import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public abstract class Transaction {
 	
-	private Date date;
-	private  long sourceAccount;
-	private long targetAccount;
+	private BankAccount sourceAccount;
+	private BankAccount targetAccount;
 	private double amount;
+	private java.util.Date transactionDate;
 	
-	public Transaction() {
+	
+	public Transaction(BankAccount targetAccount , double amount) {
 		
-	}
-	
-	public Transaction(Date date, long sourceAccount,long targetAccount, double amount) {
-		this.date= date;
-		this.sourceAccount =sourceAccount;
 		this.targetAccount = targetAccount;
 		this.amount = amount;
-	}	
+		this.transactionDate = new java.util.Date();
+		
+	} 
+	
+	public Transaction(BankAccount sourceAccount , BankAccount targetAccount , double amount) {
+		
+		this.sourceAccount = sourceAccount;
+		this.targetAccount = targetAccount;
+		this.amount = amount;
+		this.transactionDate = new java.util.Date();
+		
+	}
+	
+	public Transaction(BankAccount targetAccount, double amount , java.util.Date dateToBeAdded) {
+		this.targetAccount = targetAccount;
+		this.amount = amount;
+		this.transactionDate = dateToBeAdded;
+	}
 	
 	
+	
+	
+	
+	//getters and setters
 	public BankAccount getSourceAccount() {
-		return this.getSourceAccount();
-		
+		return sourceAccount;
 	}
 	
-	public void setSourceAccount() {
-		this.setSourceAccount();
+	public void setSourceAccount(BankAccount sourceAccount) {
+		this.sourceAccount = sourceAccount;
 	}
-
+	
 	public BankAccount getTargetAccount() {
-		return this.getTargetAccount();
+		return targetAccount;
 	}
 	
-	public void setTagetAccount() {
-		this.setSourceAccount();
-		
+	public void setTargetAccount(BankAccount targetAccount) {
+		this.targetAccount = targetAccount;
 	}
+	
 	public double getAmount() {
-		return this.getAmount();
+		return amount;
 	}
+	
 	public void setAmount(double amount) {
-		this.setAmount(amount);
-	}
-	public Date getTransactionDate() {
-		return this.getTransactionDate();
-		
+		this.amount = amount;
 	}
 	
-	public void setTransacionDate(Date date) {
-		this.setTransacionDate(date);
-		
+	public java.util.Date getTransactionDate() {
+		return transactionDate;
 	}
+	
+	public void setTransactionDate(java.util.Date transactionDate) {
+		this.transactionDate = transactionDate;
+	}
+		
+	
+		
 	public String writeToString() {
-		return this.toString();
-		
+		return "";
 	}
 	
-	////Work on it
-//	public static Transaction readFromString(String transactionDataString) {
+	
+	public static Transaction readFromString(String transactionDataString , BankAccount target) {
+		Transaction toBeAdded = null;
+		try{
+			SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy");
+			String[] toBeParsed = transactionDataString.split(",");
+			BankAccount targetAccount = target;
+			long aThingToBeAdded = Long.parseLong(toBeParsed[0]);
+			long accountNumber = Long.parseLong(toBeParsed[1]);
+			double ammountToBeAdded = Double.parseDouble(toBeParsed[2]);
+			java.util.Date dateToBeAdded = dateFormatter.parse(toBeParsed[3]);
+			
+			if(aThingToBeAdded < 0 && ammountToBeAdded > 0){
+			    toBeAdded = new DepositTransaction(targetAccount , ammountToBeAdded , dateToBeAdded);
+			}else if(aThingToBeAdded < 0 && ammountToBeAdded < 0) {
+				toBeAdded = new WithdrawTransaction(targetAccount , ammountToBeAdded , dateToBeAdded);
+			}else {
+				toBeAdded = new TransferTransaction(targetAccount , ammountToBeAdded , dateToBeAdded); 
+			}     
 		
 		
-	//return 
-	//}
+		}catch(NumberFormatException exception) {
+			throw exception;
+			
+		}catch(ParseException exception) { 
+			
+		}
+		
+		return toBeAdded;
+	}
 	
 	
-	
-	
-	
-	
-	
-	
+
 
 }

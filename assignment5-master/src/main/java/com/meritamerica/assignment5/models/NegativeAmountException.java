@@ -1,10 +1,12 @@
 package com.meritamerica.assignment5.models;
 
-public class NegativeAmountException  extends Exception{
-
-	public NegativeAmountException(String str) {
-		super(str);
+@SuppressWarnings("serial")
+public class NegativeAmountException extends Exception {
+	
+	public NegativeAmountException() {}
+	
+	public NegativeAmountException(String message) {
+		super(message);
 	}
-	
-	
+
 }
